@@ -70,6 +70,7 @@ type Attributes struct {
 	ReadOnly        bool
 	Managed         bool
 	SupportsSELinux bool
+        Propagation	api.PropagationMode
 }
 
 // Mounter interface provides methods to set up/mount the volume.
