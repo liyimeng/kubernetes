@@ -2610,12 +2610,13 @@ func ValidateServiceAccountUpdate(newServiceAccount, oldServiceAccount *api.Serv
 	return allErrs
 }
 
-const SecretKeyFmt string = "\\.?" + validation.DNS1123LabelFmt + "(\\." + validation.DNS1123LabelFmt + ")*"
+const SecretKeyFmt string = "[.]?[a-zA-Z0-9]([.]?[-_a-zA-Z0-9]*[a-zA-Z0-9])*"
 
 var secretKeyRegexp = regexp.MustCompile("^" + SecretKeyFmt + "$")
 
-// IsSecretKey tests for a string that conforms to the definition of a
-// subdomain in DNS (RFC 1123), except that a leading dot is allowed
+// IsSecretKey tests for a string that is a valid key
+// This covers keys that are valid subdomains in DNS (RFC 1123)
+// And common environment variable like names
 func IsSecretKey(value string) bool {
 	return len(value) <= validation.DNS1123SubdomainMaxLength && secretKeyRegexp.MatchString(value)
 }

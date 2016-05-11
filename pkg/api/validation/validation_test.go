@@ -6371,3 +6371,30 @@ func TestValidateHasLabel(t *testing.T) {
 		t.Errorf("expected failure")
 	}
 }
+
+func TestIsSecretKey(t *testing.T) {
+	validDNSKey := ".foo.bar-thing"
+	if !IsSecretKey(validDNSKey) {
+		t.Errorf("expected %s to be a valid secret key", validDNSKey)
+	}
+
+	validEnvVarKey := "FOO_BAR_THING"
+	if !IsSecretKey(validEnvVarKey) {
+		t.Errorf("expected %s to be a valid secret key", validEnvVarKey)
+	}
+
+	validLowercasedEnvVarKey := "foo_bar_thingy17"
+	if !IsSecretKey(validEnvVarKey) {
+		t.Errorf("expected %s to be a valid secret key", validLowercasedEnvVarKey)
+	}
+
+	invalidDoubleDotKey := ".foo.bar..thing"
+	if IsSecretKey(invalidDoubleDotKey) {
+		t.Errorf("expected %s to not be a valid secret key", invalidDoubleDotKey)
+	}
+
+	invalidKey := "foo**bar"
+	if IsSecretKey(invalidKey) {
+		t.Errorf("expected %s to not be a valid secret key", invalidKey)
+	}
+}
