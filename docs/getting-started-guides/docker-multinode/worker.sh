@@ -201,7 +201,7 @@ start_k8s() {
         -v /var/run:/var/run:rw  \
         -v /:/rootfs:ro \
         -v /var/lib/docker/:/var/lib/docker:rw \
-        -v /var/lib/kubelet/:/var/lib/kubelet:rw \
+        -v /var/lib/kubelet/:/var/lib/kubelet:rw,shared \
         gcr.io/google_containers/hyperkube-${ARCH}:v${K8S_VERSION} \
         /hyperkube kubelet \
             --allow-privileged=true \
