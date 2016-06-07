@@ -83,7 +83,7 @@ func (plugin *hostPathPlugin) GetPluginName() string {
 }
 
 func (plugin *hostPathPlugin) GetVolumeName(spec *volume.Spec) (string, error) {
-	volumeSource, _, err := getVolumeSource(spec)
+	volumeSource, _, _, err := getVolumeSource(spec)
 	if err != nil {
 		return "", err
 	}
@@ -107,13 +107,15 @@ func (plugin *hostPathPlugin) GetAccessModes() []api.PersistentVolumeAccessMode 
 }
 
 func (plugin *hostPathPlugin) NewMounter(spec *volume.Spec, pod *api.Pod, _ volume.VolumeOptions) (volume.Mounter, error) {
-	hostPathVolumeSource, readOnly, err := getVolumeSource(spec)
+	hostPathVolumeSource, readOnly, propagation, err := getVolumeSource(spec)
 	if err != nil {
 		return nil, err
 	}
+       
 	return &hostPathMounter{
 		hostPath: &hostPath{path: hostPathVolumeSource.Path},
 		readOnly: readOnly,
+                propagation: propagation,
 	}, nil
 }
 
@@ -179,6 +181,7 @@ func (hp *hostPath) GetPath() string {
 type hostPathMounter struct {
 	*hostPath
 	readOnly bool
+        propagation api.PropagationMode
 }
 
 var _ volume.Mounter = &hostPathMounter{}
@@ -188,6 +191,7 @@ func (b *hostPathMounter) GetAttributes() volume.Attributes {
 		ReadOnly:        b.readOnly,
 		Managed:         false,
 		SupportsSELinux: false,
+                Propagation:	 b.propagation,
 	}
 }
 
@@ -313,13 +317,13 @@ func (r *hostPathDeleter) Delete() error {
 }
 
 func getVolumeSource(
-	spec *volume.Spec) (*api.HostPathVolumeSource, bool, error) {
+	spec *volume.Spec) (*api.HostPathVolumeSource, bool, api.PropagationMode, error) {
 	if spec.Volume != nil && spec.Volume.HostPath != nil {
-		return spec.Volume.HostPath, spec.ReadOnly, nil
+		return spec.Volume.HostPath, spec.ReadOnly, spec.Volume.HostPath.Propagation, nil
 	} else if spec.PersistentVolume != nil &&
 		spec.PersistentVolume.Spec.HostPath != nil {
-		return spec.PersistentVolume.Spec.HostPath, spec.ReadOnly, nil
+		return spec.PersistentVolume.Spec.HostPath, spec.ReadOnly, spec.PersistentVolume.Spec.HostPath.Propagation, nil
 	}
 
-	return nil, false, fmt.Errorf("Spec does not reference an HostPath volume type")
+	return nil, false, api.PropagationPrivate, fmt.Errorf("Spec does not reference an HostPath volume type")
 }

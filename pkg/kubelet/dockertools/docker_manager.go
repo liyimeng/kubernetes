@@ -476,6 +476,13 @@ func makeMountBindings(mounts []kubecontainer.Mount, podHasSELinuxLabel bool) (r
 		if m.ReadOnly {
 			bind += ":ro"
 		}
+                if string(m.Propagation) != "" {
+         	        if m.ReadOnly {
+                                bind += "," + string(m.Propagation)
+                        } else {
+                                bind += ":" + string(m.Propagation)
+                        }
+                }
 		// Only request relabeling if the pod provides an
 		// SELinux context. If the pod does not provide an
 		// SELinux context relabeling will label the volume
@@ -483,7 +490,7 @@ func makeMountBindings(mounts []kubecontainer.Mount, podHasSELinuxLabel bool) (r
 		// This would restrict access to the volume to the
 		// container which mounts it first.
 		if m.SELinuxRelabel && podHasSELinuxLabel {
-			if m.ReadOnly {
+			if m.ReadOnly || string(m.Propagation) != "" {
 				bind += ",Z"
 			} else {
 				bind += ":Z"

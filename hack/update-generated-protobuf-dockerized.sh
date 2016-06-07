@@ -21,7 +21,10 @@ set -o pipefail
 KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 source "${KUBE_ROOT}/hack/lib/init.sh"
 
+
 kube::golang::setup_env
+
+go get golang.org/x/tools/cmd/goimports
 
 hack/build-go.sh cmd/libs/go2idl/go-to-protobuf cmd/libs/go2idl/go-to-protobuf/protoc-gen-gogo
 
@@ -40,7 +43,7 @@ gotoprotobuf=$(kube::util::find-binary "go-to-protobuf")
 # requires the 'proto' tag to build (will remove when ready)
 # searches for the protoc-gen-gogo extension in the output directory
 # satisfies import of github.com/gogo/protobuf/gogoproto/gogo.proto and the core Google protobuf types
-PATH="${KUBE_ROOT}/_output/local/go/bin:${PATH}" \
+PATH="${KUBE_ROOT}/_output/dockerized/go/bin:${PATH}" \
   "${gotoprotobuf}" \
   --proto-import="${KUBE_ROOT}/vendor" \
   --proto-import="${KUBE_ROOT}/third_party/protobuf"

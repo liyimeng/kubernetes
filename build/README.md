@@ -90,6 +90,41 @@ export KUBERNETES_NO_PROXY=127.0.0.1
 
 If you are using sudo to make kubernetes build for example make quick-release, you need run `sudo -E make quick-release` to pass the environment variables.
 
+## Build and Test API change
+
+If there are API changes, you need to generate some source code before building binary. The following steps show you how to build a hyperkube image with API changes inside container, and push it to a specified registry to test.
+ 
+* Activate build container from Kubernetes repo top dir
+```
+./build/shell.sh
+```
+* Generate new API by running these commands INSIDE the container
+```
+./hack/update-generated-protobuf-dockerized.sh
+./hack/update-codegen.sh
+./hack/update-codecgen.sh
+./hack/build-go.sh cmd/hyperkube
+```
+If all go well, exit the container, and continue with the following on the building HOST
+* Copy kubectl into your client node, Assume you install kubectl on localhost
+```
+sudo cp _output/dockerized/bin/linux/amd64/kubectl /usr/bin/kubectl
+```
+* Build and push hyperkube image
+```
+KUBE_DOCKER_REGISTRY=localhost:5050 KUBE_DOCKER_OWNER=liyi KUBE_DOCKER_VERSION=1.3.0-kolla ./hack/dev-api-push-hyperkube.sh 
+```
+* Deploy the cluster
+```
+docker run --volume=/:/rootfs:ro --volume=/sys:/sys:rw --volume=/var/lib/docker/:/var/lib/docker:rw \
+--volume=/var/lib/kubelet/:/var/lib/kubelet:rw,shared --volume=/var/run:/var/run:rw \
+--net=host --pid=host --privileged=true --name=kubelet -d localhost:5050/liyi/hyperkube-amd64:1.3.0-kolla \
+/hyperkube kubelet --resolv-conf="" --containerized --hostname-override="127.0.0.1" --address="0.0.0.0" \
+--api-servers=http://localhost:8080 --config=/etc/kubernetes/manifests --cluster-dns=10.1.29.10 \
+--cluster-domain=openstack --allow-privileged=true --v=2
+```
+Happy hacking!
+
 ## TODOs
 
 These are in no particular order

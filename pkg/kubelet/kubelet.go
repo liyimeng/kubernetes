@@ -1277,7 +1277,6 @@ func makeMounts(pod *api.Pod, podDir string, container *api.Container, hostName,
 			glog.Warningf("Mount cannot be satisified for container %q, because the volume is missing: %q", container.Name, mount)
 			continue
 		}
-
 		relabelVolume := false
 		// If the volume supports SELinux and it has not been
 		// relabeled already and it is not a read-only volume,
@@ -1296,6 +1295,7 @@ func makeMounts(pod *api.Pod, podDir string, container *api.Container, hostName,
 			HostPath:       hostPath,
 			ReadOnly:       mount.ReadOnly,
 			SELinuxRelabel: relabelVolume,
+                        Propagation:	vol.Mounter.GetAttributes().Propagation,
 		})
 	}
 	if mountEtcHostsFile {

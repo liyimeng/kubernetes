@@ -351,6 +351,8 @@ type Mount struct {
 	ReadOnly bool
 	// Whether the mount needs SELinux relabeling
 	SELinuxRelabel bool
+	// Propagation mode for the mount, only valid for hostPathVolume source.
+        Propagation api.PropagationMode
 }
 
 type PortMapping struct {

@@ -537,7 +537,7 @@ type HostPathVolumeSource struct {
 	// Path of the directory on the host.
 	// More info: http://releases.k8s.io/HEAD/docs/user-guide/volumes.md#hostpath
 	Path string                 `json:"path" protobuf:"bytes,1,opt,name=path"`
-	Propagation PropagationMode `json:"propagation,omitempty"` protobuf:"bytes,2,opt,name=propagation"`
+	Propagation PropagationMode `json:"propagation,omitempty" protobuf:"bytes,2,opt,name=propagation"`
 }
 
 // Represents an empty directory for a pod.
